@@ -79,9 +79,6 @@ def now_str():
 
 
 def insert_history(db, inquiry_id, changed_by, field_name, old_value, new_value, at):
-    if os.environ.get("FAIL_HISTORY") == "1":
-        # N-01 の検証用：履歴登録を意図的に失敗させる
-        raise sqlite3.OperationalError("FAIL_HISTORY=1: 履歴登録を意図的に失敗させました")
     db.execute(
         "INSERT INTO inquiry_histories (inquiry_id, changed_by, field_name, old_value, new_value, changed_at)"
         " VALUES (?, ?, ?, ?, ?, ?)",
@@ -99,7 +96,7 @@ def current_user():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """ログイン機能は既存想定。動作確認用にユーザーを選んでログインするだけの簡易版。"""
+    """【既存機能の代用】ログインは既存想定。権限の確認のため、ユーザーを選ぶだけの最小スタブ。"""
     db = get_db()
     if request.method == "POST":
         user = db.execute("SELECT * FROM users WHERE id = ? AND is_active = 1",
@@ -126,7 +123,7 @@ def require_login():
     return None
 
 
-# ------------------------------------------------------------------ 一覧（既存想定・遷移用の最小版）
+# ------------------------------------------------------------------ 【既存機能の代用】一覧（既存想定。詳細画面の[一覧に戻る]の遷移先として最小限）
 @app.route("/")
 def index():
     rows = get_db().execute(
