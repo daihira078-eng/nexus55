@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <div class="card-head"><h1>問い合わせ詳細</h1><a href="{{ url_for('index') }}">[一覧に戻る]</a></div>
+  <dl class="info">
+    <dt>件名</dt><dd>{{ inq.title }}</dd>
+    <dt>依頼者</dt><dd>{{ inq.requester_name }}</dd>
+    <dt>優先度</dt><dd class="{{ priority[1] }}">{{ priority[0] }}</dd>
+    <dt>登録日</dt><dd>{{ created_at }}</dd>
+    <dt>本文</dt><dd>{{ inq.body }}</dd>
+  </dl>
+</section>
+
+{% if next_statuses %}{# V-02 #}
+<section class="card" id="status-section">
+  <h2>▼ ステータス変更</h2>
+  <form method="post" action="{{ url_for('post_status', inquiry_id=inq.id) }}">
+    <input type="hidden" name="updated_at" value="{{ inq.updated_at }}">
+    <p>現在： [{{ status_label }}]</p>
+    <p>変更先：
+      {% for code, label in next_statuses %}{# V-01 #}
+      <label><input type="radio" name="status" value="{{ code }}" {% if loop.first %}checked{% endif %}> {{ label }}</label>
+      {% endfor %}
+    </p>
+    <p>コメント（任意・200字以内）<br>
+      <textarea name="comment" rows="3" cols="60"></textarea></p>
+    <button type="submit">ステータスを変更</button>
+  </form>
+</section>
+{% endif %}
+
+<section class="card" id="assignee-section">
+  <h2>▼ 担当者割り当て</h2>
+  <form method="post" action="{{ url_for('post_assignee', inquiry_id=inq.id) }}">
+    <input type="hidden" name="updated_at" value="{{ inq.updated_at }}">
+    <p>現在： {{ assignee.name if assignee else '未割り当て' }}</p>
+    <p>変更先：
+      <select name="assignee_id">
+        {% if is_admin %}<option value="">未割り当て</option>{% endif %}{# V-03 #}
+        {% for u in active_users %}
+        <option value="{{ u.id }}" {% if inq.assignee_id == u.id %}selected{% endif %}>{{ u.name }}</option>
+        {% endfor %}
+      </select>
+    </p>
+    <button type="submit" {% if assign_disabled %}disabled{% endif %}>担当者を変更</button>
+    {% if member_locked %}<p class="note">{{ ask_admin_msg }}</p>{% endif %}{# V-04 #}
+  </form>
+</section>
+
+<section class="card" id="history-section">
+  <h2>▼ 変更履歴（新しい順・最大20件）</h2>
+  {% if histories %}
+  <ul class="history">
+    {% for h in histories %}
+    <li><div>{{ h.at }}　{{ h.by }}</div><div class="indent">{{ h.label }}： {{ h.old }} → {{ h.new }}</div></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>変更履歴はありません</p>{# V-07 #}
+  {% endif %}
+</section>
+{% endblock %}

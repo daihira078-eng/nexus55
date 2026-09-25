@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>問い合わせ一覧</h1>
+<table class="list">
+  <tr><th>ID</th><th>件名</th><th>ステータス</th><th>担当者</th></tr>
+  {% for i in inquiries %}
+  <tr><td>{{ i.id }}</td><td><a href="{{ url_for('detail', inquiry_id=i.id) }}">{{ i.title }}</a></td>
+      <td>{{ labels[i.status] }}</td><td>{{ i.assignee_name or '未割り当て' }}</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

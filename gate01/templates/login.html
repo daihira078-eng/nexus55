@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>ログイン（動作確認用）</h1>
+<form method="post">
+  <input type="hidden" name="next" value="{{ next }}">
+  <select name="user_id">
+    {% for u in users %}<option value="{{ u.id }}">{{ u.name }}（{{ u.role }}）</option>{% endfor %}
+  </select>
+  <button type="submit">ログイン</button>
+</form>
+{% endblock %}
