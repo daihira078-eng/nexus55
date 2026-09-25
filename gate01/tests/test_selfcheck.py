@@ -19,7 +19,6 @@ def client(tmp_path, monkeypatch):
     db = str(tmp_path / "test.db")
     init_db(db)
     monkeypatch.setattr(app_module, "DB_PATH", db)
-    monkeypatch.delenv("FAIL_HISTORY", raising=False)
     app_module.app.config["TESTING"] = True
     c = app_module.app.test_client()
     c.db_path = db
@@ -170,7 +169,9 @@ def test_12_messages_exact():
 def test_13_rollback_when_history_fails(client, monkeypatch):
     login(client, ADMIN)
     ua = row(client, INPROG_ID)["updated_at"]
-    monkeypatch.setenv("FAIL_HISTORY", "1")
+    def broken_insert(*a, **k):  # 履歴登録を意図的に失敗させる（テストの中だけで差し替え）
+        raise sqlite3.OperationalError("履歴登録を意図的に失敗させました")
+    monkeypatch.setattr(app_module, "insert_history", broken_insert)
     app_module.app.config["PROPAGATE_EXCEPTIONS"] = False
     resp = client.post(f"/inquiries/{INPROG_ID}/status",
                        data={"status": "DONE", "comment": "", "updated_at": ua})
